@@ -1,3 +1,5 @@
+const mockData = require("../mockData");
+
 
 const insertRecord = (req, res, next) => {
     console.log(req.body)
@@ -7,4 +9,8 @@ const insertRecord = (req, res, next) => {
     })
 }
 
-module.exports = {insertRecord}
+const getRecord = (req, res, next) => {
+    res.status(200).json(mockData)
+}
+
+module.exports = {insertRecord, getRecord}
