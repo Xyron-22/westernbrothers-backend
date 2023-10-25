@@ -1,10 +1,14 @@
 const express = require("express");
-const {insertRecord, getRecord} = require("../controllers/formControllers")
+const {insertRecordInOrderTable, getAllOrderRecords} = require("../controllers/orderTableController")
+const {getAllAccountRecords} = require("../controllers/accountTableController");
 
 const router = express.Router()
 
-router.route("/form")
-    .get(getRecord)
-    .post(insertRecord)
+router.route("/order")
+    .get(getAllOrderRecords)
+    .post(insertRecordInOrderTable)
+
+router.route("/account")
+    .get(getAllAccountRecords)
 
 module.exports = router

@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const formRoutes = require("./routes/formRoutes");
+const globalErrorHandler = require("./controllers/errorController");
 
 const app = express();
 
@@ -14,5 +15,7 @@ if(process.env.NODE_ENV === "Development") {
 }
 
 app.use("/api/v1", formRoutes)
+
+app.use(globalErrorHandler)
 
 module.exports = app
