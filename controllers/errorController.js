@@ -1,4 +1,5 @@
 
+//function to execute for dev error information only when in development mode
 const devErrors = (error, res) => {
     res.status(error.statusCode).json({
         status: error.status,
@@ -8,6 +9,7 @@ const devErrors = (error, res) => {
     })
 }
 
+//golbal express error handler where all the error caught in express is passed to this middleware
 const globalErrorHandler = (error, req, res, next) => {
     error.statusCode = error.statusCode || 500
     error.status = error.status || "error"
