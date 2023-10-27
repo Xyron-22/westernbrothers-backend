@@ -2,26 +2,22 @@ const express = require("express");
 const {insertRecordInOrderTable, getAllOrderRecords} = require("../controllers/orderTableController")
 const {getAllAccountRecords, getAccountBasedOnDsp} = require("../controllers/accountTableController");
 const {getAllProductRecords} = require("../controllers/productTableController");
-const {signUp, signIn} = require("../controllers/authController");
 
 const router = express.Router()
 
-router.route("/signup")
-    .post(signUp)
-
-router.route("/signin")
-    .post(signIn)
-
+//route for order table
 router.route("/order")
     .get(getAllOrderRecords)
     .post(insertRecordInOrderTable)
 
+//route for account table
 router.route("/account")
     .get(getAllAccountRecords)
 
 router.route("/account/:dsp")
     .get(getAccountBasedOnDsp)
 
+//route for product table
 router.route("/product")
     .get(getAllProductRecords)
 

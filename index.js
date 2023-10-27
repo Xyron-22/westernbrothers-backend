@@ -21,5 +21,5 @@ app.listen(process.env.PORT, "127.0.0.1", () => {
 })
 
 process.on("unhandledRejection", (error) => {
-    console.log("unhandled rejection occurred " + error.message)
+    console.log("unhandled rejection occurred " + error)
 })

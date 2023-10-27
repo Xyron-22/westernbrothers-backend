@@ -17,10 +17,11 @@ const getAllAccountRecords = (req, res, next) => {
 //route handler for getting all account based on DSP
 const getAccountBasedOnDsp = (req, res, next) => {
     const {dsp} = req.params;
-    const q = "SELECT * FROM `account` WHERE DSP = ?"
+    const q = process.env.QUERY_ACCOUNT_BASED_ON_DSP
 
     connection.query(q, [dsp], (err, result, fields) => {
-        if (err) return next(new CustomError(err.message, 500))
+        if (err) return next(err)
+        if (!result[0]) return next(new CustomError("Invalid DSP input", 400))
         res.status(200).json({
         status: "success",
         data: result

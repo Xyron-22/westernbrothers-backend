@@ -1,7 +1,9 @@
 const connection = require("../index");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const CustomError = require("../utils/customErrorHandler");
+const sendEmail = require("../utils/email");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 const jwtSign = (id, role) => {
@@ -10,15 +12,19 @@ const jwtSign = (id, role) => {
     })
 }
 
-//route handler for signing up a user or admin
+//route handler for signing up an admin account
 const signUp = asyncErrorHandler(async (req, res, next) => {
-    const {username, password, role} = req.body
+    const {email, password, confirmPassword, role} = req.body
+    if (!email || !password || !confirmPassword || !role) return next(new CustomError("All fields are required", 400))
+    if (password !== confirmPassword) return next(new CustomError("Password and Confirm Password does not match", 400))
+    if (role.toLowerCase() !== process.env.AUTHORIZED_ROLE || role.toLowerCase() !== process.env.UNAUTHORIZED_ROLE) return next(new CustomError("Invalid role input", 400))
+   
     const hashedPassword = await bcrypt.hash(password, 5)
-    const q = "INSERT INTO `auth` (username, password, role) VALUES (?)"
-    const values = [username, hashedPassword, role]
+    const q = process.env.INSERT_USER
+    const values = [email, hashedPassword, role]
     connection.query(q, [values], (err, result ,fields) => {
         if (err) return next(err)
-        const token = jwtSign(result.insertId, role)
+        const token = jwtSign(result.insertId, role.toLowerCase())
         res.status(200).json({
             status: "success",
             data: result,
@@ -29,11 +35,10 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for signing in a user 
 const signIn = asyncErrorHandler(async (req, res, next) => {
-    const {username, password} = req.body
-    if (!username || !password) return next(new CustomError("Username and Password is required", 401))
-    const q = "SELECT * FROM `auth` WHERE username = (?)"
-    const value = [username]
-    connection.query(q, [value], async (err, result, fields) => {
+    const {email, password} = req.body
+    if (!email || !password) return next(new CustomError("Email and Password is required", 400))
+    const q = process.env.QUERY_USER
+    connection.query(q, [email], async (err, result, fields) => {
         if (err) return next(err)
         if (result[0] && await bcrypt.compare(password, result[0].password)) {
             const token = jwtSign(result[0].auth_id, result[0].role)
@@ -42,11 +47,84 @@ const signIn = asyncErrorHandler(async (req, res, next) => {
                 token
             })
         } else if (!result[0]) {
-            return next(new CustomError("Username does not exist", 401))
+            return next(new CustomError("Email does not exist", 400))
         } else {
-            return next(new CustomError("Password does not match", 401))
+            return next(new CustomError("Wrong password", 400))
         }
     })
 })
 
-module.exports = {signUp, signIn}
+//route handler for forgot password
+const forgotPassword = asyncErrorHandler(async (req, res, next) => {
+    const {email} = req.body
+    const q = process.env.QUERY_USER
+    let user;
+    connection.query(q, [email], (err, result, fields) => {
+        if (err) return next(err)
+        if (!result[0]) return next(new CustomError("Email does not exist", 400))
+        user = result[0]
+        const resetToken = crypto.randomBytes(32).toString("hex")
+        const passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+        const resetTokenExpired = Date.now() + 10 * 60 * 1000;
+        const q = process.env.UPDATE_TOKEN
+        const values = [passwordResetToken, resetTokenExpired, user?.auth_id]
+        connection.query(q, values, async (err, result, fields) => {
+            if (err) return next(err)
+            // const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/users/resetpassword/${resetToken}`
+            const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
+            const message = `We have received a password reset request. Please use the link below to reset your password \n\n${resetUrl}\n\nThis link will only be available for 10 minutes`
+            try {
+                await sendEmail({
+                    email: user?.email,
+                    subject: "Password reset link",
+                    message
+                })
+                    res.status(200).json({
+                    status: "success",
+                    message: "password reset link sent to the user"
+                })
+            } catch (error) {
+                connection.query(q, [null, null, user?.auth_id], (err, result, fields) => {
+                    if (err) return next(err)
+                })
+                return next(new CustomError("There was an error sending password reset email, Please try again later", 500))
+            }
+        })
+    })
+      
+})
+
+//router handler for resetting the password
+const resetPassword = (req, res, next) => {
+    const {password, confirmPassword} = req.body
+    const {token} = req.params
+    console.log(req.body)
+    if(!password || !confirmPassword) return next(new CustomError("Password and Confirm password field is required", 400))
+    if(password !== confirmPassword) return next(new CustomError("Password and Confirm password does not match", 400))
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+    const q = process.env.QUERY_USER_TO_UPDATE_TOKEN
+    const value = [hashedToken, Date.now()]
+    let user;
+    connection.query(q, value, async (err, result, fields) => {
+        if (err) return next(err)
+        if(!result[0]) return next(new CustomError("Token is invalid or has expired!", 400))
+        user = result[0]
+        try {
+            const hashedPassword = await bcrypt.hash(password, 5)
+            const q = process.env.UPDATE_USER_PASSWORD
+            const values = [hashedPassword, null, null]
+            connection.query(q, values, (err, result, fields) => {
+                if (err) return next(err)
+                res.status(200).json({
+                    status: "success",
+                    message: "Password successfully changed"
+                })
+            })
+        } catch (error) {
+            return next(error)
+        }
+    })
+}
+
+
+module.exports = {signUp, signIn, forgotPassword, resetPassword}
