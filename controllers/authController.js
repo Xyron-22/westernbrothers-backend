@@ -17,12 +17,11 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
     const {email, password, confirmPassword, role} = req.body
     if (!email || !password || !confirmPassword || !role) return next(new CustomError("All fields are required", 400))
     if (password !== confirmPassword) return next(new CustomError("Password and Confirm Password does not match", 400))
-    if (role.toLowerCase() !== process.env.AUTHORIZED_ROLE || role.toLowerCase() !== process.env.UNAUTHORIZED_ROLE) return next(new CustomError("Invalid role input", 400))
-   
-    const hashedPassword = await bcrypt.hash(password, 5)
-    const q = process.env.INSERT_USER
-    const values = [email, hashedPassword, role]
-    connection.query(q, [values], (err, result ,fields) => {
+    if (role.toLowerCase() === process.env.AUTHORIZED_ROLE || role.toLowerCase() === process.env.UNAUTHORIZED_ROLE) {
+        const hashedPassword = await bcrypt.hash(password, 5)
+        const q = process.env.INSERT_USER
+        const values = [email, hashedPassword, role.toLowerCase()]
+        connection.query(q, [values], (err, result ,fields) => {
         if (err) return next(err)
         const token = jwtSign(result.insertId, role.toLowerCase())
         res.status(200).json({
@@ -31,13 +30,16 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
             token
         })
     })
+    } else {
+        next(new CustomError("Invalid role input", 400))
+    }
 })
 
 //route handler for signing in a user 
 const signIn = asyncErrorHandler(async (req, res, next) => {
     const {email, password} = req.body
     if (!email || !password) return next(new CustomError("Email and Password is required", 400))
-    const q = process.env.QUERY_USER
+    const q = process.env.QUERY_USER_WITH_EMAIL
     connection.query(q, [email], async (err, result, fields) => {
         if (err) return next(err)
         if (result[0] && await bcrypt.compare(password, result[0].password)) {
@@ -57,7 +59,7 @@ const signIn = asyncErrorHandler(async (req, res, next) => {
 //route handler for forgot password
 const forgotPassword = asyncErrorHandler(async (req, res, next) => {
     const {email} = req.body
-    const q = process.env.QUERY_USER
+    const q = process.env.QUERY_USER_WITH_EMAIL
     let user;
     connection.query(q, [email], (err, result, fields) => {
         if (err) return next(err)
@@ -70,7 +72,6 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
         const values = [passwordResetToken, resetTokenExpired, user?.auth_id]
         connection.query(q, values, async (err, result, fields) => {
             if (err) return next(err)
-            // const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/users/resetpassword/${resetToken}`
             const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
             const message = `We have received a password reset request. Please use the link below to reset your password \n\n${resetUrl}\n\nThis link will only be available for 10 minutes`
             try {
@@ -112,7 +113,7 @@ const resetPassword = (req, res, next) => {
         try {
             const hashedPassword = await bcrypt.hash(password, 5)
             const q = process.env.UPDATE_USER_PASSWORD
-            const values = [hashedPassword, null, null]
+            const values = [hashedPassword, null, null, Date.now()]
             connection.query(q, values, (err, result, fields) => {
                 if (err) return next(err)
                 res.status(200).json({

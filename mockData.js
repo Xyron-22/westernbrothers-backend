@@ -1,6 +1,6 @@
 module.exports = {
         orderDate: "2023-10-22",
-        accountId: 1,
+        accountId: 2,
         customerName: "John Doe",
         tinNumber: "1231231asdasd123",
         contactNumber: 123125423,

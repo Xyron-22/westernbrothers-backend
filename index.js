@@ -2,7 +2,7 @@ require("dotenv").config();
 const mysql = require("mysql2");
 
 process.on("uncaughtException", (error) => {
-    console.log("program error occurred " + error.message)
+    console.log("program error occurred " + error)
 })
 
 module.exports = mysql.createConnection(

@@ -21,7 +21,6 @@ const insertRecordInOrderTable = (req, res, next) => {
 
 //route handler for getting all of the records in order table, join with the product and account table
 const getAllOrderRecords = (req, res, next) => {
-     //WHERE order_date = '2023-10-22'
     const q = process.env.QUERY_ORDER
     connection.query(q, (err, results, fields) => {
         if (err) return next(new CustomError(err.message, 500))
