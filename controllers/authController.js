@@ -15,6 +15,7 @@ const jwtSign = (id, role) => {
 //route handler for signing up an admin account
 const signUp = asyncErrorHandler(async (req, res, next) => {
     const {email, password, confirmPassword, role} = req.body
+    console.log(email, password, confirmPassword, role)
     if (!email || !password || !confirmPassword || !role) return next(new CustomError("All fields are required", 400))
     if (password !== confirmPassword) return next(new CustomError("Password and Confirm Password does not match", 400))
     if (role.toLowerCase() === process.env.AUTHORIZED_ROLE || role.toLowerCase() === process.env.UNAUTHORIZED_ROLE) {
@@ -38,6 +39,7 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
 //route handler for signing in a user 
 const signIn = asyncErrorHandler(async (req, res, next) => {
     const {email, password} = req.body
+    console.log(email, password)
     if (!email || !password) return next(new CustomError("Email and Password is required", 400))
     const q = process.env.QUERY_USER_WITH_EMAIL
     connection.query(q, [email], async (err, result, fields) => {
@@ -72,7 +74,7 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
         const values = [passwordResetToken, resetTokenExpired, user?.auth_id]
         connection.query(q, values, async (err, result, fields) => {
             if (err) return next(err)
-            const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
+            const resetUrl = `${process.env.FRONTEND_URL}/auth/resetpassword/${resetToken}`
             const message = `We have received a password reset request. Please use the link below to reset your password \n\n${resetUrl}\n\nThis link will only be available for 10 minutes`
             try {
                 await sendEmail({

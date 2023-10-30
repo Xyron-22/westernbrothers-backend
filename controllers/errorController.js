@@ -9,6 +9,14 @@ const devErrors = (error, res) => {
     })
 }
 
+//function to execute for prod error information only when in production mode
+const prodErrors = (error, res) => {
+    res.status(error.statusCode).json({
+        status: error.status,
+        message: error.message
+    })
+}
+
 //golbal express error handler where all the error caught in express is passed to this middleware
 const globalErrorHandler = (error, req, res, next) => {
     error.statusCode = error.statusCode || 500
@@ -16,6 +24,8 @@ const globalErrorHandler = (error, req, res, next) => {
    
     if (process.env.NODE_ENV === "Development") {
         devErrors(error, res)
+    } else {
+        prodErrors(error, res)
     }
 }
 
