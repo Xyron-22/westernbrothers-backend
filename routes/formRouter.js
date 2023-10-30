@@ -13,7 +13,7 @@ router.route("/order")
 
 //route for account table
 router.route("/account")
-    .get(checkIfLoggedIn, checkIfChangedPassRecently, getAllAccountRecords)
+    .get(getAllAccountRecords) //checkIfLoggedIn, checkIfChangedPassRecently, 
 
 router.route("/account/:dsp")
     .get(checkIfLoggedIn, checkIfChangedPassRecently, getAccountBasedOnDsp)
