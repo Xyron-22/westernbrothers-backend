@@ -21,7 +21,7 @@ const insertRecordInOrderTable = (req, res, next) => {
 
 //route handler for getting all of the records in order table, join with the product and account table
 const getAllOrderRecords = (req, res, next) => {
-    const q = process.env.QUERY_ORDER
+    const q = process.env.QUERY_ORDER//order by added
     connection.query(q, (err, results, fields) => {
         if (err) return next(new CustomError(err.message, 500))
         if (!results[0]) return next(new CustomError("No records found", 404))

@@ -8,7 +8,7 @@ const router = express.Router()
 
 //route for order table
 router.route("/order")
-    .get(checkIfLoggedIn, checkIfChangedPassRecently, getAllOrderRecords)
+    .get(getAllOrderRecords) //checkIfLoggedIn, checkIfChangedPassRecently, 
     .post(checkIfLoggedIn, checkIfChangedPassRecently, insertRecordInOrderTable)
 
 //route for account table
@@ -16,11 +16,11 @@ router.route("/account")
     .get(getAllAccountRecords) //checkIfLoggedIn, checkIfChangedPassRecently, 
 
 router.route("/account/:dsp")
-    .get(checkIfLoggedIn, checkIfChangedPassRecently, getAccountBasedOnDsp)
+    .get(getAccountBasedOnDsp) //checkIfLoggedIn, checkIfChangedPassRecently, 
 
 //route for product table
 router.route("/product")
-    .get(checkIfLoggedIn, checkIfChangedPassRecently, getAllProductRecords)
+    .get(getAllProductRecords) //checkIfLoggedIn, checkIfChangedPassRecently, 
 
 
 module.exports = router
