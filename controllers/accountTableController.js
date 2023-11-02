@@ -20,7 +20,6 @@ const getAccountBasedOnDsp = (req, res, next) => {
     const q = process.env.QUERY_ACCOUNT_BASED_ON_DSP//order by added
     connection.query(q, [dsp], (err, result, fields) => {
         if (err) return next(err)
-        if (!result[0]) return next(new CustomError("Invalid DSP input", 400))
         res.status(200).json({
         status: "success",
         data: result

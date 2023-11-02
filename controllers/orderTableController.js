@@ -24,7 +24,7 @@ const getAllOrderRecords = (req, res, next) => {
     const q = process.env.QUERY_ORDER//order by added
     connection.query(q, (err, results, fields) => {
         if (err) return next(new CustomError(err.message, 500))
-        if (!results[0]) return next(new CustomError("No records found", 404))
+        // if (!results[0]) return next(new CustomError("No records found", 404))
         res.status(200).json({
             status: "success",
             data: results,
