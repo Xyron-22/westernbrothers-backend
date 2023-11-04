@@ -17,6 +17,7 @@ const getAllAccountRecords = (req, res, next) => {
 //route handler for getting all account based on DSP
 const getAccountBasedOnDsp = (req, res, next) => {
     const {dsp} = req.params;
+    if (!dsp) return next(new CustomError("Please select a DSP", 400))
     const q = process.env.QUERY_ACCOUNT_BASED_ON_DSP//order by added
     connection.query(q, [dsp], (err, result, fields) => {
         if (err) return next(err)
@@ -27,4 +28,20 @@ const getAccountBasedOnDsp = (req, res, next) => {
     })
 }
 
-module.exports = {getAllAccountRecords, getAccountBasedOnDsp}
+//route handler for inserting an account record
+const insertRecordInAccountTable = (req, res, next) => {
+    const {customerNumber, accountName, location, dsp} = req.body
+    console.log(req.body)
+    if (!customerNumber || !accountName || !location || !dsp) return next(new CustomError("All fields are required", 400))
+    const q = process.env.INSERT_ACCOUNT
+    const values = [customerNumber, accountName, location, dsp]
+    connection.query(q, [values], (err, result, fields) => {
+        if (err) return next(err)
+        res.status(200).json({
+            status: "success",
+            data: result
+        })
+    })
+}
+
+module.exports = {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable}

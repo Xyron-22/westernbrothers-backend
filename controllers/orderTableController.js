@@ -1,13 +1,13 @@
-const mockData = require("../mockData");
 const connection = require("../index");
 const CustomError = require("../utils/customErrorHandler");
 
 //route handler for inserting new record/s for order table
 const insertRecordInOrderTable = (req, res, next) => {
-    const {orderDate, accountId, customerName, tinNumber, contactNumber, terms, products, remarksFreebiesConcern, deliveryDate} = mockData
+    const {orderDate, accountId, customerName, tinNumber, contactNumber, term, products, remarksFreebiesConcern, deliveryDate} = req.body
+    // console.log(req.body)
     const q = process.env.INSERT_ORDER
-    const values = products.map(({product_id, quantity, price}) => {
-        return [orderDate, accountId, product_id, customerName, tinNumber, contactNumber, terms, remarksFreebiesConcern, deliveryDate, quantity, price]
+    const values = products.map(({productId, quantity, price}) => {
+        return [orderDate, accountId, productId, customerName, tinNumber, contactNumber, term, remarksFreebiesConcern, deliveryDate, quantity, price]
     })
 
     connection.query(q, [values], (err, result, fields) => {

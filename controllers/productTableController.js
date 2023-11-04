@@ -14,4 +14,19 @@ const getAllProductRecords = (req, res, next) => {
     })
 }
 
-module.exports = {getAllProductRecords}
+//route handler for inserting product record
+const insertRecordInProductTable = (req, res, next) => {
+    const {matCode, matDescription, productFamily} = req.body
+    console.log(req.body)
+    const q = process.env.INSERT_PRODUCT
+    const values = [matCode, matDescription, productFamily || null]
+    connection.query(q, [values], (err, result, fields) => {
+        if (err) return next (err)
+        res.status(200).json({
+            status: "success",
+            data: result
+        })
+    })
+}
+
+module.exports = {getAllProductRecords, insertRecordInProductTable}
