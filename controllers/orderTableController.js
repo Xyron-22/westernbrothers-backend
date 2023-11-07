@@ -11,7 +11,7 @@ const insertRecordInOrderTable = (req, res, next) => {
     })
 
     connection.query(q, [values], (err, result, fields) => {
-        if (err) return next(new CustomError(err.message, 400))
+        if (err) return next(err)
         res.status(200).json({
             status: "success",
             data: result,
@@ -23,7 +23,7 @@ const insertRecordInOrderTable = (req, res, next) => {
 const getAllOrderRecords = (req, res, next) => {
     const q = process.env.QUERY_ORDER//order by added
     connection.query(q, (err, results, fields) => {
-        if (err) return next(new CustomError(err.message, 500))
+        if (err) return next(err)
         // if (!results[0]) return next(new CustomError("No records found", 404))
         res.status(200).json({
             status: "success",
@@ -32,4 +32,18 @@ const getAllOrderRecords = (req, res, next) => {
     })
 }
 
-module.exports = {insertRecordInOrderTable, getAllOrderRecords}
+//route handler for deleting a record in order table
+const deleteRecordInOrderTable = (req, res, next) => {
+    const {id} = req.params;
+    if (!id) return next(new CustomError("No ID attached", 400))
+    const q = process.env.DELETE_ORDER
+    connection.query(q, [id], (err, result, fields) => {
+        if (err) return next(err)
+        res.status(200).json({
+            status: "success",
+            data: result
+        })
+    })
+}
+
+module.exports = {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable}

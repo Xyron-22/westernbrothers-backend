@@ -29,4 +29,18 @@ const insertRecordInProductTable = (req, res, next) => {
     })
 }
 
-module.exports = {getAllProductRecords, insertRecordInProductTable}
+//route handler for deleting product record
+const deleteRecordInProductTable = (req, res, next) => {
+    const {id} = req.params;
+    if (!id) return next(new CustomError("No ID attached", 400))
+    const q = process.env.DELETE_PRODUCT
+    connection.query(q, [id], (err, result, fields) => {
+        if (err) return next(err)
+        res.status(200).json({
+            status: "success",
+            data: result
+        })
+    })
+}
+
+module.exports = {getAllProductRecords, insertRecordInProductTable, deleteRecordInProductTable}

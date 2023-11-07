@@ -13,7 +13,6 @@ const checkIfAuthorized = asyncErrorHandler(async (req, res, next) => {
 const checkIfLoggedIn = (req, res, next) => {
     const {authorization} = req.headers
     let token;
-    console.log(authorization)
     if (authorization && authorization.startsWith("Bearer")) {
         token = authorization.split(" ")[1]
     }

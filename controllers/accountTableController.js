@@ -44,4 +44,18 @@ const insertRecordInAccountTable = (req, res, next) => {
     })
 }
 
-module.exports = {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable}
+//route handler for deleting an account record
+const deleteRecordInAccountTable = (req, res, next) => {
+    const {id} = req.params;
+    if (!id) return next(new CustomError("No ID attached", 400))
+    const q = process.env.DELETE_ACCOUNT
+    connection.query(q, [id], (err, result, fields) => {
+        if (err) return next(err)
+        res.status(200).json({
+            status: "success",
+            data: result
+        })
+    })
+}
+
+module.exports = {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable, deleteRecordInAccountTable}
