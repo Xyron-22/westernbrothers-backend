@@ -51,7 +51,7 @@ const signIn = asyncErrorHandler(async (req, res, next) => {
         } else if (!result[0]) {
             return next(new CustomError("Email does not exist", 400))
         } else {
-            return next(new CustomError("Wrong password", 400))
+            return next(new CustomError("Password incorrect", 400))
         }
     })
 })
@@ -59,24 +59,19 @@ const signIn = asyncErrorHandler(async (req, res, next) => {
 //route handler for forgot password
 const forgotPassword = asyncErrorHandler(async (req, res, next) => {
     const {email} = req.body
-    const q = process.env.QUERY_USER_WITH_EMAIL
-    let user;
-    connection.query(q, [email], (err, result, fields) => {
+    if (!email) return next(new CustomError("Email is required", 400))
+    const q = process.env.UPDATE_TOKEN
+    const resetToken = crypto.randomBytes(32).toString("hex")
+    const passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+    const resetTokenExpired = Date.now() + 10 * 60 * 1000;
+    connection.query(q, [passwordResetToken, resetTokenExpired, email], async (err, result, fields) => {
         if (err) return next(err)
-        if (!result[0]) return next(new CustomError("Email does not exist", 400))
-        user = result[0]
-        const resetToken = crypto.randomBytes(32).toString("hex")
-        const passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
-        const resetTokenExpired = Date.now() + 10 * 60 * 1000;
-        const q = process.env.UPDATE_TOKEN
-        const values = [passwordResetToken, resetTokenExpired, user?.auth_id]
-        connection.query(q, values, async (err, result, fields) => {
-            if (err) return next(err)
-            const resetUrl = `${process.env.FRONTEND_URL}/auth/resetpassword/${resetToken}`
-            const message = `We have received a password reset request. Please use the link below to reset your password \n\n${resetUrl}\n\nThis link will only be available for 10 minutes`
+        if(result.affectedRows !== 1) return next (new CustomError("Email not found", 400))
+        const resetUrl = `${process.env.FRONTEND_URL}/auth/resetpassword/${resetToken}`
+        const message = `We have received a password reset request. Please use the link below to reset your password \n\n${resetUrl}\n\nThis link will only be available for 10 minutes`
             try {
                 await sendEmail({
-                    email: user?.email,
+                    email: email,
                     subject: "Password reset link",
                     message
                 })
@@ -85,47 +80,34 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
                     message: "password reset link sent to the user"
                 })
             } catch (error) {
-                connection.query(q, [null, null, user?.auth_id], (err, result, fields) => {
+                connection.query(q, [null, null, email], (err, result, fields) => {
                     if (err) return next(err)
                 })
+                console.log(error)
                 return next(new CustomError("There was an error sending password reset email, Please try again later", 500))
             }
-        })
     })
-      
 })
 
 //router handler for resetting the password
-const resetPassword = (req, res, next) => {
+const resetPassword = asyncErrorHandler(async (req, res, next) => {
     const {password, confirmPassword} = req.body
     const {token} = req.params
-    console.log(req.body)
     if(!password || !confirmPassword) return next(new CustomError("Password and Confirm password field is required", 400))
     if(password !== confirmPassword) return next(new CustomError("Password and Confirm password does not match", 400))
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
-    const q = process.env.QUERY_USER_TO_UPDATE_TOKEN
-    const value = [hashedToken, Date.now()]
-    let user;
-    connection.query(q, value, async (err, result, fields) => {
-        if (err) return next(err)
-        if(!result[0]) return next(new CustomError("Token is invalid or has expired!", 400))
-        user = result[0]
-        try {
-            const hashedPassword = await bcrypt.hash(password, 5)
-            const q = process.env.UPDATE_USER_PASSWORD
-            const values = [hashedPassword, null, null, Date.now()]
-            connection.query(q, values, (err, result, fields) => {
-                if (err) return next(err)
-                res.status(200).json({
-                    status: "success",
-                    message: "Password successfully changed"
-                })
-            })
-        } catch (error) {
-            return next(error)
-        }
+    const hashedPassword = await bcrypt.hash(password, 5)
+    const q = process.env.UPDATE_USER_PASSWORD
+    const values = [hashedPassword, null, null, Date.now(), hashedToken, Date.now()]
+    connection.query(q, values, (err, result, fields) => {
+        if (err) return next (err)
+        if (result.affectedRows !== 1) return next (new CustomError("Invalid is invalid or has expired!", 400))
+        res.status(200).json({
+            status: "success",
+            message: "Password successfully changed"
+        })
     })
 }
-
+)
 
 module.exports = {signUp, signIn, forgotPassword, resetPassword}
