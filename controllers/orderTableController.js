@@ -4,8 +4,7 @@ const CustomError = require("../utils/customErrorHandler");
 //route handler for inserting new record/s for order table
 const insertRecordInOrderTable = (req, res, next) => {
     const {orderDate, accountId, customerName, tinNumber, contactNumber, term, products, remarksFreebiesConcern, deliveryDate} = req.body
-    // console.log(req.body)
-    const q = process.env.INSERT_ORDER
+    const q = process.env.INSERT_ORDER//
     const values = products.map(({productId, quantity, price}) => {
         return [orderDate, accountId, productId, customerName, tinNumber, contactNumber, term, remarksFreebiesConcern, deliveryDate, quantity, price]
     })
@@ -21,7 +20,7 @@ const insertRecordInOrderTable = (req, res, next) => {
 
 //route handler for getting all of the records in order table, join with the product and account table
 const getAllOrderRecords = (req, res, next) => {
-    const q = process.env.QUERY_ORDER//order by added
+    const q = process.env.QUERY_ORDER//
     connection.query(q, (err, results, fields) => {
         if (err) return next(err)
         // if (!results[0]) return next(new CustomError("No records found", 404))
@@ -36,7 +35,7 @@ const getAllOrderRecords = (req, res, next) => {
 const deleteRecordInOrderTable = (req, res, next) => {
     const {id} = req.params;
     if (!id) return next(new CustomError("No ID attached", 400))
-    const q = process.env.DELETE_ORDER
+    const q = process.env.DELETE_ORDER//
     connection.query(q, [id], (err, result, fields) => {
         if (err) return next(err)
         res.status(200).json({

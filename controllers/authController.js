@@ -19,7 +19,7 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
     if (password !== confirmPassword) return next(new CustomError("Password and Confirm Password does not match", 400))
     if (role.toLowerCase() === process.env.AUTHORIZED_ROLE || role.toLowerCase() === process.env.UNAUTHORIZED_ROLE) {
         const hashedPassword = await bcrypt.hash(password, 5)
-        const q = process.env.INSERT_USER
+        const q = process.env.INSERT_USER//
         const values = [email, hashedPassword, role.toLowerCase()]
         connection.query(q, [values], (err, result ,fields) => {
         if (err) return next(err)
@@ -39,7 +39,7 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
 const signIn = asyncErrorHandler(async (req, res, next) => {
     const {email, password} = req.body
     if (!email || !password) return next(new CustomError("Email and Password is required", 400))
-    const q = process.env.QUERY_USER_WITH_EMAIL
+    const q = process.env.QUERY_USER_WITH_EMAIL//
     connection.query(q, [email], async (err, result, fields) => {
         if (err) return next(err)
         if (result[0] && await bcrypt.compare(password, result[0].password)) {
@@ -60,7 +60,7 @@ const signIn = asyncErrorHandler(async (req, res, next) => {
 const forgotPassword = asyncErrorHandler(async (req, res, next) => {
     const {email} = req.body
     if (!email) return next(new CustomError("Email is required", 400))
-    const q = process.env.UPDATE_TOKEN
+    const q = process.env.UPDATE_TOKEN//
     const resetToken = crypto.randomBytes(32).toString("hex")
     const passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
     const resetTokenExpired = Date.now() + 10 * 60 * 1000;
@@ -97,7 +97,7 @@ const resetPassword = asyncErrorHandler(async (req, res, next) => {
     if(password !== confirmPassword) return next(new CustomError("Password and Confirm password does not match", 400))
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
     const hashedPassword = await bcrypt.hash(password, 5)
-    const q = process.env.UPDATE_USER_PASSWORD
+    const q = process.env.UPDATE_USER_PASSWORD//
     const values = [hashedPassword, null, null, Date.now(), hashedToken, Date.now()]
     connection.query(q, values, (err, result, fields) => {
         if (err) return next (err)

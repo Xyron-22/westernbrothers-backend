@@ -25,7 +25,7 @@ const checkIfLoggedIn = (req, res, next) => {
 //middleware for checking if a user changed password recently
 const checkIfChangedPassRecently = (req, res, next) => {
     const {decodedToken} = req.body
-    const q = process.env.QUERY_USER_WITH_AUTH_ID
+    const q = process.env.QUERY_USER_WITH_AUTH_ID//
     connection.query(q, [decodedToken.id], (err, result, fields) => {
         if (err) return next(err)
         if (!result[0]) return next(new CustomError("No user found", 404))

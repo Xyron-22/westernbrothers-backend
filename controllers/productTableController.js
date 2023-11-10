@@ -3,10 +3,9 @@ const CustomError = require("../utils/customErrorHandler");
 
 //route handler for getting all the products records
 const getAllProductRecords = (req, res, next) => {
-    const q = process.env.QUERY_PRODUCT//order by added
+    const q = process.env.QUERY_PRODUCT//
     connection.query(q, (err, result, fields) => {
         if (err) return next(err)
-        // if (!result[0]) return next(new CustomError("No records found", 404))
         res.status(200).json({
             status: "success",
             data: result
@@ -17,8 +16,7 @@ const getAllProductRecords = (req, res, next) => {
 //route handler for inserting product record
 const insertRecordInProductTable = (req, res, next) => {
     const {matCode, matDescription, productFamily} = req.body
-    console.log(req.body)
-    const q = process.env.INSERT_PRODUCT
+    const q = process.env.INSERT_PRODUCT//
     const values = [matCode, matDescription, productFamily || null]
     connection.query(q, [values], (err, result, fields) => {
         if (err) return next (err)
@@ -33,7 +31,7 @@ const insertRecordInProductTable = (req, res, next) => {
 const deleteRecordInProductTable = (req, res, next) => {
     const {id} = req.params;
     if (!id) return next(new CustomError("No ID attached", 400))
-    const q = process.env.DELETE_PRODUCT
+    const q = process.env.DELETE_PRODUCT//
     connection.query(q, [id], (err, result, fields) => {
         if (err) return next(err)
         res.status(200).json({

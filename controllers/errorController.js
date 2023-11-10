@@ -17,6 +17,22 @@ const prodErrors = (error, res) => {
     })
 }
 
+//function for handling duplicate keys errors
+const errorHandlerForDuplicateKeys = (error, res) => {
+    res.status(error.statusCode).json({
+        status: error.status,
+        message: "Some of the fields must be unique"
+    })
+}
+
+//function for handling null field errors
+const errorHandlerForNullFields = (error, res) => {
+    res.status(error.statusCode).json({
+        status: error.status,
+        message: "Some of the fields are required"
+    })
+}
+
 //golbal express error handler where all the error caught in express is passed to this middleware
 const globalErrorHandler = (error, req, res, next) => {
     error.statusCode = error.statusCode || 500
@@ -25,7 +41,13 @@ const globalErrorHandler = (error, req, res, next) => {
     if (process.env.NODE_ENV === "Development") {
         devErrors(error, res)
     } else {
-        prodErrors(error, res)
+        if (error.errno === 1062) {
+            errorHandlerForDuplicateKeys(error, res)
+        } else if (error.errno === 1048) {
+            errorHandlerForNullFields(error, res)
+        } else {
+            prodErrors(error, res)
+        }
     }
 }
 

@@ -8,26 +8,26 @@ const router = express.Router()
 
 //route for order table
 router.route("/order")
-    .get(getAllOrderRecords) //checkIfLoggedIn, checkIfChangedPassRecently, 
-    .post(checkIfLoggedIn, checkIfChangedPassRecently, insertRecordInOrderTable) //checkIfLoggedIn, checkIfChangedPassRecently, 
+    .get(getAllOrderRecords)
+    .post(checkIfLoggedIn, checkIfChangedPassRecently, insertRecordInOrderTable)
 
 router.route("/order/:id")
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteRecordInOrderTable)
 
 //route for account table
 router.route("/account")
-    .get(getAllAccountRecords) //checkIfLoggedIn, checkIfChangedPassRecently, 
+    .get(getAllAccountRecords)
     .post(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, insertRecordInAccountTable)
 
 router.route("/account/:id")
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteRecordInAccountTable)
 
 router.route("/account/:dsp")
-    .get(getAccountBasedOnDsp) //checkIfLoggedIn, checkIfChangedPassRecently, 
+    .get(getAccountBasedOnDsp)
 
 //route for product table
 router.route("/product")
-    .get(getAllProductRecords) //checkIfLoggedIn, checkIfChangedPassRecently,
+    .get(getAllProductRecords)
     .post(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, insertRecordInProductTable) 
 
 router.route("/product/:id")
