@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
 const CustomError = require("../utils/customErrorHandler");
-const connection = require("../index");
+const pool = require("../index");
+const promisePool = pool.promise();
 
 //middleware for checking if a user is an authorized personnel to access a route
 const checkIfAuthorized = asyncErrorHandler(async (req, res, next) => {
@@ -22,19 +23,18 @@ const checkIfLoggedIn = (req, res, next) => {
     next()
 }
 
-//middleware for checking if a user changed password recently
-const checkIfChangedPassRecently = (req, res, next) => {
+//middleware for checking if a user changed password recently //refactored to use promised pool
+const checkIfChangedPassRecently = asyncErrorHandler(async (req, res, next) => {
     const {decodedToken} = req.body
     const q = process.env.QUERY_USER_WITH_AUTH_ID//
-    connection.query(q, [decodedToken.id], (err, result, fields) => {
+    const [query_result, fields, err] = await promisePool.query(q, [decodedToken.id])
         if (err) return next(err)
-        if (!result[0]) return next(new CustomError("No user found", 404))
-        if (!result[0].password_changed_at || parseInt(result[0].password_changed_at / 1000, 10) < decodedToken.iat) {
+        if (query_result.length === 0) return next(new CustomError("No user found", 404))
+        if (!query_result[0].password_changed_at || parseInt(query_result[0].password_changed_at / 1000, 10) < decodedToken.iat) {
             next()
         } else {
             next(new CustomError("Password changed recently, you have to log in again", 400))
         }
-    })
-}
+})
 
 module.exports = {checkIfAuthorized, checkIfLoggedIn, checkIfChangedPassRecently}

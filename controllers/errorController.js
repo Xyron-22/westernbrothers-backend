@@ -33,6 +33,14 @@ const errorHandlerForNullFields = (error, res) => {
     })
 }
 
+//function for handling database connection timeout
+const errorHandlerForDBConnectionTimeOut = (error, res) => {
+    res.status(error.statusCode).json({
+        status: error.status,
+        message: "Connection timeout, please try again"
+    })
+}
+
 //golbal express error handler where all the error caught in express is passed to this middleware
 const globalErrorHandler = (error, req, res, next) => {
     error.statusCode = error.statusCode || 500
@@ -45,6 +53,8 @@ const globalErrorHandler = (error, req, res, next) => {
             errorHandlerForDuplicateKeys(error, res)
         } else if (error.errno === 1048) {
             errorHandlerForNullFields(error, res)
+        } else if (error.errno == -4077) {
+            errorHandlerForDBConnectionTimeOut(error, res)
         } else {
             prodErrors(error, res)
         }
