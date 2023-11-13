@@ -39,8 +39,7 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
 const signIn = asyncErrorHandler(async (req, res, next) => {
     const {email, password} = req.body
     if (!email || !password) return next(new CustomError("Email and Password is required", 400))
-    const q = process.env.QUERY_USER_WITH_EMAIL//
-
+    const q = process.env.QUERY_USER_WITH_EMAIL//  
     const [query_result, fields, err] = await promisePool.query(q, [email])
     if (err) return next(err)
     if (query_result.length > 0 && await bcrypt.compare(password, query_result[0].password)) {
