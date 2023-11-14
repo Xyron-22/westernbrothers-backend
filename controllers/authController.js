@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const CustomError = require("../utils/customErrorHandler");
 const sendEmail = require("../utils/email");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
+const checkMySQLConnection = require("../utils/checkMySQLConnection");
 
 const jwtSign = (id, role) => {
     return jwt.sign({id, role}, process.env.JSON_SECRET_STRING, {
@@ -15,6 +16,7 @@ const jwtSign = (id, role) => {
 
 //route handler for signing up an admin account //refactored to using the promised pool
 const signUp = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {email, password, confirmPassword, role} = req.body
     if (!email || !password || !confirmPassword || !role) return next(new CustomError("All fields are required", 400))
     if (password !== confirmPassword) return next(new CustomError("Password and Confirm Password does not match", 400))
@@ -37,9 +39,10 @@ const signUp = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for signing in a user //refactored to using promised pool
 const signIn = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {email, password} = req.body
     if (!email || !password) return next(new CustomError("Email and Password is required", 400))
-    const q = process.env.QUERY_USER_WITH_EMAIL//  
+    const q = process.env.QUERY_USER_WITH_EMAIL  
     const [query_result, fields, err] = await promisePool.query(q, [email])
     if (err) return next(err)
     if (query_result.length > 0 && await bcrypt.compare(password, query_result[0].password)) {
@@ -57,6 +60,7 @@ const signIn = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for forgot password //refactored to using promised pool
 const forgotPassword = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {email} = req.body
     if (!email) return next(new CustomError("Email is required", 400))
     const q = process.env.UPDATE_TOKEN//
@@ -87,6 +91,7 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
 
 //router handler for resetting the password //refactored to using promised pool
 const resetPassword = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {password, confirmPassword} = req.body
     const {token} = req.params
     if(!password || !confirmPassword) return next(new CustomError("Password and Confirm password field is required", 400))

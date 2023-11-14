@@ -2,9 +2,11 @@ const pool = require("../index");
 const promisePool = pool.promise();
 const CustomError = require("../utils/customErrorHandler");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
+const checkMySQLConnection = require("../utils/checkMySQLConnection");
 
 //route handler for inserting new record/s for order table //refactored to using promised pool
 const insertRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {orderDate, accountId, customerName, tinNumber, contactNumber, term, products, remarksFreebiesConcern, deliveryDate} = req.body
     const q = process.env.INSERT_ORDER//
     const values = products.map(({productId, quantity, price}) => {
@@ -21,6 +23,7 @@ const insertRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for getting all of the records in order table, join with the product and account table //refactored to using promised pool
 const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const q = process.env.QUERY_ORDER//
     const [query_result, fields, err] = await promisePool.query(q)
         if (err) return next(err)
@@ -32,6 +35,7 @@ const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for deleting a record in order table //refactored to using promised pool
 const deleteRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {id} = req.params;
     if (!id) return next(new CustomError("No ID attached", 400))
     const q = process.env.DELETE_ORDER//

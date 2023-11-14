@@ -2,9 +2,11 @@ const pool = require("../index");
 const promisePool = pool.promise();
 const CustomError = require("../utils/customErrorHandler");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
+const checkMySQLConnection = require("../utils/checkMySQLConnection");
 
 //route handler for getting all the products records //refactored to using promised pool
 const getAllProductRecords = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const q = process.env.QUERY_PRODUCT//
     const [query_result, fields, err] = await promisePool.query(q)
         if (err) return next(err)
@@ -16,6 +18,7 @@ const getAllProductRecords = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for inserting product record //refactored to using promised pool
 const insertRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {matCode, matDescription, productFamily} = req.body
     const q = process.env.INSERT_PRODUCT//
     const values = [matCode, matDescription, productFamily || null]
@@ -29,6 +32,7 @@ const insertRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for deleting product record //refactored to using promised pool
 const deleteRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {id} = req.params;
     if (!id) return next(new CustomError("No ID attached", 400))
     const q = process.env.DELETE_PRODUCT//

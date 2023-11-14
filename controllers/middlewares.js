@@ -3,6 +3,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 const CustomError = require("../utils/customErrorHandler");
 const pool = require("../index");
 const promisePool = pool.promise();
+const checkMySQLConnection = require("../utils/checkMySQLConnection");
 
 //middleware for checking if a user is an authorized personnel to access a route
 const checkIfAuthorized = asyncErrorHandler(async (req, res, next) => {
@@ -25,6 +26,7 @@ const checkIfLoggedIn = (req, res, next) => {
 
 //middleware for checking if a user changed password recently //refactored to use promised pool
 const checkIfChangedPassRecently = asyncErrorHandler(async (req, res, next) => {
+    await checkMySQLConnection(next)
     const {decodedToken} = req.body
     const q = process.env.QUERY_USER_WITH_AUTH_ID//
     const [query_result, fields, err] = await promisePool.query(q, [decodedToken.id])
