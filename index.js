@@ -5,25 +5,18 @@ process.on("uncaughtException", (error) => {
     console.log("program error occurred " + error)
 })
 
-module.exports = mysql.createPool(
-    {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_USER_PASS,
-        database: process.env.DB_NAME,
-        waitForConnections: true,
-        connectionLimit: 20,
-        maxIdle: 20, // max idle connections, the default value is the same as `connectionLimit`
-        idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
-        queueLimit: 0,
-        enableKeepAlive: true,
-        keepAliveInitialDelay: 0,
-    }
-) 
-
-const keepAlive = require("./utils/keepAlive");
-    
-setInterval(keepAlive, 60000); // ping to DB every 1 minute
+module.exports = () => {
+    const connection = mysql.createConnection(
+        {
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_USER_PASS,
+            database: process.env.DB_NAME,
+        }
+    )
+    console.log("created new connection")
+    return connection 
+}
     
 const app = require("./app")
 
