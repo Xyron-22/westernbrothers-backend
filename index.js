@@ -1,5 +1,6 @@
 require("dotenv").config();
 const mysql = require("mysql2");
+const job = require("./utils/cronJob");
 
 process.on("uncaughtException", (error) => {
     console.log("program error occurred " + error)
@@ -19,6 +20,8 @@ module.exports = () => {
 }
     
 const app = require("./app")
+
+job.start()
 
 app.listen(process.env.PORT, () => {
     console.log("app listening to port:" + process.env.PORT)

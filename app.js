@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const formRouter = require("./routes/formRouter");
 const usersRouter = require("./routes/usersRouter");
+const serverRouter = require("./routes/serverRouter");
 const globalErrorHandler = require("./controllers/errorController");
 const CustomError = require("./utils/customErrorHandler");
 
@@ -18,6 +19,7 @@ if(process.env.NODE_ENV === "Development") {
 
 app.use("/api/v1/form", formRouter)
 app.use("/api/v1/users", usersRouter)
+app.use("/server", serverRouter)
 
 app.use("*", (req, res, next) => {
     next(new CustomError("Not Found", 404))
