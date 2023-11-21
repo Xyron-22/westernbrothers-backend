@@ -25,7 +25,7 @@ const insertRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
     const q = process.env.INSERT_PRODUCT//
     const values = [matCode, matDescription, productFamily || null]
     const connection = createConnection()
-    connection.execute(q, [values], (err, query_result, fields) => {
+    connection.query(q, [values], (err, query_result, fields) => { //changed to query
         if (err) {
             connection.end()
             return next (err)

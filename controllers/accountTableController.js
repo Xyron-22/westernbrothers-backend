@@ -46,7 +46,7 @@ const insertRecordInAccountTable = asyncErrorHandler(async (req, res, next) => {
     const q = process.env.INSERT_ACCOUNT//
     const values = [customerNumber, accountName, location, dsp]
     const connection = createConnection()
-    connection.execute(q, [values], (err, query_result, fields) => {
+    connection.query(q, [values], (err, query_result, fields) => { //changed to query
         if (err) {
             connection.end()
             return next(err)
