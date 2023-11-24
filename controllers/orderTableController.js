@@ -41,6 +41,75 @@ const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
     })       
 })
 
+//route handler for extracting necessary data for analytics
+const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
+    const q = process.env.QUERY_ORDER_DATA
+    const connection = createConnection()
+    connection.execute(q, (err, query_result, fields) => {
+        if (err) {
+            connection.end()
+            return next(err)
+        }
+        connection.end()
+        let months = [];
+          let year = {
+            orders: 0,
+            products: 0,
+            sales: 0
+          };
+          let currentMonth;
+          for (let i = 0; i < 12; i++) {
+            let month;
+            let currentYear = new Date(Date.now()).getFullYear()
+            i + 1 > 9 ? month = `${currentYear}-${i + 1}` : month = `${currentYear}-0${i + 1}`
+            const result = query_result.filter((monthData) => monthData.year_date === month)
+            if (month === (i + 1 > 9 ? `${currentYear}-${new Date(Date.now()).getMonth() + 1}` : `${currentYear}-0${new Date(Date.now()).getMonth() + 1}`)) {
+                if (result[0]) {
+                    currentMonth = {
+                        year_date: result[0].year_date,
+                        total_orders: result[0].total_orders,
+                        total_products: Number(result[0].total_products),
+                        total_sales: Number(result[0].total_sales),
+                    }
+                } else {
+                    currentMonth = {
+                        date: month,
+                        orders: 0,
+                        products: 0,
+                        sales: 0
+                    }
+                }
+            }
+            if (result.length === 1) {
+              months.push({
+                date: month,
+                orders: result[0].total_orders,
+                products: Number(result[0].total_products),
+                sales: Number(result[0].total_sales)
+              })
+              year.orders = result[0].total_orders + year.orders,
+              year.products = Number(result[0].total_products) + year.products,
+              year.sales = Number(result[0].total_sales) + year.sales
+            } else {
+              months.push({
+                date: month,
+                orders: 0,
+                products: 0,
+                sales: 0
+              })
+            }
+          }
+        res.status(200).json({
+            status: "success",
+            data: {
+                months,
+                year,
+                currentMonth
+            }
+        })
+    })
+})
+
 //route handler for deleting a record in order table //refactored to using promised pool
 const deleteRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
     const {id} = req.params;
@@ -60,4 +129,4 @@ const deleteRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
     }) 
 })
 
-module.exports = {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable}
+module.exports = {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData}
