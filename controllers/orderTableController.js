@@ -58,6 +58,7 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
             sales: 0
           };
           let currentMonth;
+          let prevMonthIndex;
           for (let i = 0; i < 12; i++) {
             let month;
             let currentYear = new Date(Date.now()).getFullYear()
@@ -79,6 +80,7 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
                         sales: 0
                     }
                 }
+                prevMonthIndex = i
             }
             if (result.length === 1) {
               months.push({
@@ -99,12 +101,14 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
               })
             }
           }
+          const previousMonth = months[prevMonthIndex - 1]
         res.status(200).json({
             status: "success",
             data: {
                 months,
                 year,
-                currentMonth
+                currentMonth,
+                previousMonth
             }
         })
     })
