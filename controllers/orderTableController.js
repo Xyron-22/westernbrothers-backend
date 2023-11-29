@@ -44,21 +44,27 @@ const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
 //route handler for extracting necessary data for analytics
 const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
     const q = process.env.QUERY_ORDER_DATA
+    const q2 = process.env.QUERY_ORDER_DSP_DATA
+    const q3 = process.env.QUERY_ORDER_PRODUCT_DATA
+    const q4 = process.env.QUERY_ORDER_ACCOUNT_DATA
     const connection = createConnection()
+    let months = [];
+    let year = {
+      orders: 0,
+      products: 0,
+      sales: 0
+    };
+    let currentMonth;
+    let previousMonth;
+    let prevMonthIndex;
+    let dspData;
+    let productData;
+    let accountData;
     connection.execute(q, (err, query_result, fields) => {
         if (err) {
             connection.end()
             return next(err)
-        }
-        connection.end()
-        let months = [];
-          let year = {
-            orders: 0,
-            products: 0,
-            sales: 0
-          };
-          let currentMonth;
-          let prevMonthIndex;
+        }     
           for (let i = 0; i < 12; i++) {
             let month;
             let currentYear = new Date(Date.now()).getFullYear()
@@ -101,15 +107,40 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
               })
             }
           }
-          const previousMonth = months[prevMonthIndex - 1]
-        res.status(200).json({
-            status: "success",
-            data: {
-                months,
-                year,
-                currentMonth,
-                previousMonth
+          previousMonth = months[prevMonthIndex - 1]
+        connection.execute(q2, (err, query_result, fields) => {
+            if (err) {
+                connection.end()
+                return next(err)
             }
+            dspData = query_result
+            connection.execute(q3, (err, query_result, fields) => {
+                if (err) {
+                    connection.end()
+                    return next(err)
+                }
+                productData = query_result
+               connection.execute(q4, (err, query_result, fields) => {
+                if (err) {
+                    connection.end()
+                    return next(err)
+                }
+                connection.end()
+                accountData = query_result
+                res.status(200).json({
+                    status: "success",
+                    data: {
+                        months,
+                        year,
+                        currentMonth,
+                        previousMonth,
+                        dspData,
+                        productData,
+                        accountData
+                    }
+                })
+               })
+            })            
         })
     })
 })
