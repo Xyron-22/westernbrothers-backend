@@ -80,10 +80,10 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
                     }
                 } else {
                     currentMonth = {
-                        date: month,
-                        orders: 0,
-                        products: 0,
-                        sales: 0
+                        year_date: month,
+                        total_orders: 0,
+                        total_products: 0,
+                        total_sales: 0
                     }
                 }
                 prevMonthIndex = i
