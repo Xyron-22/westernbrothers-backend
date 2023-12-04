@@ -164,4 +164,27 @@ const deleteRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
     }) 
 })
 
-module.exports = {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData}
+//route handler for deleting all of order records in the records table
+const deleteAllRecordsInOrderTable = asyncErrorHandler(async (req, res, next) => {
+    const q = process.env.RESET_ORDER_ID_COUNT
+    const q2 = process.env.TRUNCATE_ORDER_TABLE
+    const connection = createConnection()
+    connection.execute(q, (err, query_result, fields) => {
+        if (err) {
+            connection.end()
+            return next(err)
+        } connection.execute(q2, (err, query_result, fields) => {
+            if (err) {
+                connection.end()
+                return next(err)
+            }
+            connection.end()
+            res.status(200).json({
+                status: "success",
+                data: query_result
+            })
+        })
+    })
+})
+
+module.exports = {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData, deleteAllRecordsInOrderTable}
