@@ -5,7 +5,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 //route handler for inserting new record/s for order table //refactored to using promised pool
 const insertRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
     const {orderDate, accountId, customerName, tinNumber, contactNumber, term, products, remarksFreebiesConcern, deliveryDate} = req.body
-    const q = process.env.INSERT_ORDER//
+    const q = "INSERT INTO `order` (order_date, account_id, product_id, customer_name, tin, contact, terms, remarks_freebies_concern, delivery_date, quantity, price) VALUES ?"
     const values = products.map(({productId, quantity, price}) => {
         return [orderDate, accountId, productId, customerName, tinNumber, contactNumber, term, remarksFreebiesConcern, deliveryDate, quantity, price]
     })
@@ -26,7 +26,7 @@ const insertRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for getting all of the records in order table, join with the product and account table //refactored to using promised pool
 const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
-    const q = process.env.QUERY_ORDER//
+    const q = "SELECT order_id, order_date, customer_number, account_name, location, dsp, mat_description, quantity, price, customer_name, tin, contact, terms, remarks_freebies_concern, delivery_date, quantity * price AS total_price FROM `order` INNER JOIN `account` ON order.account_id = account.account_id INNER JOIN `product` ON order.product_id = product.product_id ORDER BY order_id ASC"
     const connection = createConnection()
     connection.execute(q, (err, query_result, fields) => {
         if (err) {
@@ -43,10 +43,10 @@ const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for extracting necessary data for analytics
 const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
-    const q = process.env.QUERY_ORDER_DATA
-    const q2 = process.env.QUERY_ORDER_DSP_DATA
-    const q3 = process.env.QUERY_ORDER_PRODUCT_DATA
-    const q4 = process.env.QUERY_ORDER_ACCOUNT_DATA
+    const q = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS year_date, COUNT(order_id) AS total_orders, SUM(quantity) AS total_products, SUM(price * quantity) AS total_sales FROM `order` GROUP BY DATE_FORMAT(order_date, '%Y-%m') ORDER BY DATE_FORMAT(order_date, '%Y-%m') ASC"
+    const q2 = "SELECT dsp AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity * price) AS UNSIGNED) AS total_sales FROM `account` INNER JOIN `order` ON `account`.account_id = `order`.account_id GROUP BY dsp"
+    const q3 = "SELECT mat_description AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity* price)AS UNSIGNED) AS total_sales FROM `product` INNER JOIN `order` ON `product`.product_id = `order`.product_id GROUP BY mat_description ORDER BY total_sales DESC"
+    const q4 = "SELECT account_name AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity* price)AS UNSIGNED) AS total_sales FROM `account` INNER JOIN `order` ON `account`.account_id = `order`.account_id GROUP BY account_name ORDER BY total_sales DESC"
     const connection = createConnection()
     let months = [];
     let year = {
@@ -144,12 +144,11 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
         })
     })
 })
-//test
 //route handler for deleting a record in order table //refactored to using promised pool
 const deleteRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
     const {id} = req.params;
     if (!id) return next(new CustomError("No ID attached", 400))
-    const q = process.env.DELETE_ORDER//
+    const q = "DELETE FROM `order` WHERE order_id = ?"
     const connection = createConnection()
     connection.execute(q, [id], (err, query_result, fields) => {
         if (err) {
@@ -166,8 +165,8 @@ const deleteRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for deleting all of order records in the records table
 const deleteAllRecordsInOrderTable = asyncErrorHandler(async (req, res, next) => {
-    const q = process.env.RESET_ORDER_ID_COUNT
-    const q2 = process.env.TRUNCATE_ORDER_TABLE
+    const q = "ALTER TABLE `order` AUTO_INCREMENT = 1"
+    const q2 = "TRUNCATE TABLE `order`"
     const connection = createConnection()
     connection.execute(q, (err, query_result, fields) => {
         if (err) {

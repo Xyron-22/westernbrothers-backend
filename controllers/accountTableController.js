@@ -4,7 +4,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 //route handlers for getting all the account records //refactored to using promised pool
 const getAllAccountRecords = asyncErrorHandler(async (req, res, next) => {
-    const q = process.env.QUERY_ACCOUNT //
+    const q = "SELECT * FROM `account` ORDER BY account_id ASC"
     const connection = createConnection()
     connection.execute(q, (err, query_result, fields) => {
         if (err) {
@@ -24,7 +24,7 @@ const getAllAccountRecords = asyncErrorHandler(async (req, res, next) => {
 const getAccountBasedOnDsp = asyncErrorHandler(async (req, res, next) => {
     const {dsp} = req.params;
     if (!dsp) return next(new CustomError("Please select a DSP", 400))
-    const q = process.env.QUERY_ACCOUNT_BASED_ON_DSP//
+    const q = "SELECT account_id, account_name, location FROM `account` WHERE dsp = ? ORDER BY account_id ASC"
     const connection = createConnection()
     connection.execute(q, [dsp], (err, query_result, fields) => {
         if (err) {
@@ -43,7 +43,7 @@ const getAccountBasedOnDsp = asyncErrorHandler(async (req, res, next) => {
 const insertRecordInAccountTable = asyncErrorHandler(async (req, res, next) => {
     const {customerNumber, accountName, location, dsp} = req.body
     if (!customerNumber || !accountName || !location || !dsp) return next(new CustomError("All fields are required", 400))
-    const q = process.env.INSERT_ACCOUNT//
+    const q = "INSERT INTO `account` (customer_number, account_name, location, dsp) VALUES (?)"
     const values = [customerNumber, accountName, location, dsp]
     const connection = createConnection()
     connection.query(q, [values], (err, query_result, fields) => { //changed to query
@@ -63,7 +63,7 @@ const insertRecordInAccountTable = asyncErrorHandler(async (req, res, next) => {
 const deleteRecordInAccountTable = asyncErrorHandler(async (req, res, next) => {
     const {id} = req.params;
     if (!id) return next(new CustomError("No ID attached", 400))
-    const q = process.env.DELETE_ACCOUNT//
+    const q = "DELETE FROM `account` WHERE account_id = ?"
     const connection = createConnection()
     connection.execute(q, [id], (err, query_result, fields) => {
         if (err) {

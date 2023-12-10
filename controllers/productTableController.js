@@ -4,7 +4,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 //route handler for getting all the products records //refactored to using promised pool
 const getAllProductRecords = asyncErrorHandler(async (req, res, next) => {
-    const q = process.env.QUERY_PRODUCT//
+    const q = "SELECT * FROM `product` ORDER BY product_id ASC"
     const connection = createConnection()
     connection.execute(q, (err, query_result, fields) => {
         if (err) {
@@ -22,7 +22,7 @@ const getAllProductRecords = asyncErrorHandler(async (req, res, next) => {
 //route handler for inserting product record //refactored to using promised pool
 const insertRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
     const {matCode, matDescription, productFamily} = req.body
-    const q = process.env.INSERT_PRODUCT//
+    const q = "INSERT INTO `product` (mat_code, mat_description, product_family) VALUES (?)"
     const values = [matCode, matDescription, productFamily || null]
     const connection = createConnection()
     connection.query(q, [values], (err, query_result, fields) => { //changed to query
@@ -42,7 +42,7 @@ const insertRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
 const deleteRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
     const {id} = req.params;
     if (!id) return next(new CustomError("No ID attached", 400))
-    const q = process.env.DELETE_PRODUCT//
+    const q = "DELETE FROM `product` WHERE product_id = ?"
     const connection = createConnection()
     connection.execute(q, [id], (err, query_result, fields) => {
         if (err) {

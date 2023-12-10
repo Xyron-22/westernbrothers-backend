@@ -25,7 +25,7 @@ const checkIfLoggedIn = (req, res, next) => {
 //middleware for checking if a user changed password recently //refactored to use promised pool
 const checkIfChangedPassRecently = asyncErrorHandler(async (req, res, next) => {
     const {decodedToken} = req.body
-    const q = process.env.QUERY_USER_WITH_AUTH_ID//
+    const q = "SELECT * FROM `auth` WHERE auth_id = ?"
     const connection = createConnection()
     connection.execute(q, [decodedToken.id], (err, query_result, fields) => {
         if (err) {
