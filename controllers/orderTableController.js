@@ -144,7 +144,7 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
         })
     })
 })
-
+//test
 //route handler for deleting a record in order table //refactored to using promised pool
 const deleteRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
     const {id} = req.params;
