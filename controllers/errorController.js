@@ -41,6 +41,14 @@ const errorHandlerForDBConnectionTimeOut = (error, res) => {
     })
 }
 
+//function for handling jwt expired error
+const errorHandlerForExpiredJwt = (error, res) => {
+    res.status(error.statusCode).json({
+        status: error.status,
+        message: "Session expired, login again"
+    })
+}
+
 //golbal express error handler where all the error caught in express is passed to this middleware
 const globalErrorHandler = (error, req, res, next) => {
     error.statusCode = error.statusCode || 500
@@ -55,6 +63,8 @@ const globalErrorHandler = (error, req, res, next) => {
             errorHandlerForNullFields(error, res)
         } else if (error.errno == -4077) {
             errorHandlerForDBConnectionTimeOut(error, res)
+        } else if (error.message === "jwt expired") {
+            errorHandlerForExpiredJwt(error, res)
         } else {
             prodErrors(error, res)
         }
