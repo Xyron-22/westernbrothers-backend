@@ -21,9 +21,9 @@ const getAllProductRecords = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for inserting product record //refactored to using promised pool
 const insertRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
-    const {matCode, matDescription, productFamily} = req.body
-    const q = "INSERT INTO `product` (mat_code, mat_description, product_family) VALUES (?)"
-    const values = [matCode, matDescription, productFamily || null]
+    const {matCode, matDescription, productFamily, volume} = req.body
+    const q = "INSERT INTO `product` (mat_code, mat_description, product_family, uom) VALUES (?)"
+    const values = [matCode, matDescription, productFamily || null, volume]
     const connection = createConnection()
     connection.query(q, [values], (err, query_result, fields) => { //changed to query
         if (err) {

@@ -17,7 +17,7 @@ router.route("/order/data")
 
 router.route("/order/:id")
     .get(getAllOrderRecordsBasedOnAuthId)
-    .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteRecordInOrderTable)
+    .delete(checkIfLoggedIn, checkIfChangedPassRecently, deleteRecordInOrderTable)
 
 //route for account table
 router.route("/account")

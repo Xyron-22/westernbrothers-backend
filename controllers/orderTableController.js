@@ -61,17 +61,18 @@ const getAllOrderRecordsBasedOnAuthId = asyncErrorHandler(async (req, res, next)
 
 //route handler for extracting necessary data for analytics
 const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
-    const q = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS year_date, COUNT(order_id) AS total_orders, SUM(quantity) AS total_products, SUM(price * quantity) AS total_sales, COUNT(DISTINCT account_id) as outlet_numbers FROM `order` GROUP BY DATE_FORMAT(order_date, '%Y-%m') ORDER BY DATE_FORMAT(order_date, '%Y-%m') ASC"
-    const q2 = "SELECT dsp AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity * price) AS UNSIGNED) AS total_sales FROM `account` INNER JOIN `order` ON `account`.account_id = `order`.account_id GROUP BY dsp"
-    const q3 = "SELECT mat_description AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity* price)AS UNSIGNED) AS total_sales FROM `product` INNER JOIN `order` ON `product`.product_id = `order`.product_id GROUP BY mat_description ORDER BY total_sales DESC"
-    const q4 = "SELECT account_name AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity* price)AS UNSIGNED) AS total_sales FROM `account` INNER JOIN `order` ON `account`.account_id = `order`.account_id GROUP BY account_name ORDER BY total_sales DESC"
+    const q = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS year_date, COUNT(order_id) AS total_orders, SUM(quantity) AS total_products, SUM(price * quantity) AS total_sales, COUNT(DISTINCT account_id) as outlet_numbers, SUM(uom * quantity) AS volume FROM `order` INNER JOIN `product` ON order.product_id = product.product_id GROUP BY DATE_FORMAT(order_date, '%Y-%m') ORDER BY DATE_FORMAT(order_date, '%Y-%m') ASC"
+    const q2 = "SELECT dsp AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity * price) AS UNSIGNED) AS total_sales FROM `account` INNER JOIN `order` ON `account`.account_id = `order`.account_id WHERE YEAR(order_date) = DATE_FORMAT(NOW(), '%Y') GROUP BY dsp"
+    const q3 = "SELECT mat_description AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity* price)AS UNSIGNED) AS total_sales FROM `product` INNER JOIN `order` ON `product`.product_id = `order`.product_id WHERE YEAR(order_date) = DATE_FORMAT(NOW(), '%Y') GROUP BY mat_description ORDER BY total_sales DESC"
+    const q4 = "SELECT account_name AS name, COUNT(order_id) AS total_orders, CAST(SUM(quantity* price)AS UNSIGNED) AS total_sales FROM `account` INNER JOIN `order` ON `account`.account_id = `order`.account_id WHERE YEAR(order_date) = DATE_FORMAT(NOW(), '%Y') GROUP BY account_name ORDER BY total_sales DESC"
     const connection = createConnection()
     let months = [];
     let year = {
       orders: 0,
       products: 0,
       sales: 0,
-      outlets: 0
+      outlets: 0,
+      volume: 0
     };
     let currentMonth;
     let previousMonth;
@@ -96,7 +97,8 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
                         total_orders: result[0].total_orders,
                         total_products: Number(result[0].total_products),
                         total_sales: Number(result[0].total_sales),
-                        outlet_numbers: result[0].outlet_numbers
+                        outlet_numbers: result[0].outlet_numbers,
+                        volume: Number(result[0].volume)
                     }
                 } else {
                     currentMonth = {
@@ -104,7 +106,8 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
                         total_orders: 0,
                         total_products: 0,
                         total_sales: 0,
-                        outlet_numbers: 0
+                        outlet_numbers: 0,
+                        volume: 0
                     }
                 }
                 prevMonthIndex = i
@@ -115,19 +118,22 @@ const getAllOrderData = asyncErrorHandler(async (req, res, next) => {
                 orders: result[0].total_orders,
                 products: Number(result[0].total_products),
                 sales: Number(result[0].total_sales),
-                outlets: result[0].outlet_numbers
+                outlets: result[0].outlet_numbers,
+                volume: Number(result[0].volume)
               })
               year.orders = result[0].total_orders + year.orders,
               year.products = Number(result[0].total_products) + year.products,
               year.sales = Number(result[0].total_sales) + year.sales,
-              year.outlets = result[0].outlet_numbers + year.outlets
+              year.outlets = result[0].outlet_numbers + year.outlets,
+              year.volume = Number(result[0].volume) + year.volume
             } else {
               months.push({
                 date: month,
                 orders: 0,
                 products: 0,
                 sales: 0,
-                outlets: 0
+                outlets: 0,
+                volume: 0
               })
             }
           }
