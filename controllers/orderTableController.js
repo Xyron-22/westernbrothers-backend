@@ -5,9 +5,10 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 //route handler for inserting new record/s for order table //refactored to using promised pool
 const insertRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
     const {orderDate, accountId, customerName, tinNumber, contactNumber, term, products, remarksFreebiesConcern, deliveryDate, auth_id} = req.body
+    console.log(req.body)
     const q = "INSERT INTO `order` (order_date, account_id, product_id, customer_name, tin, contact, terms, remarks_freebies_concern, delivery_date, quantity, price, time_stamp, auth_id) VALUES ?"
     const values = products.map(({productId, quantity, price}) => {
-        return [orderDate, accountId, productId, customerName, tinNumber, contactNumber, term, remarksFreebiesConcern, deliveryDate, quantity, price, Date.now(), auth_id]
+        return [orderDate, accountId, productId, customerName, tinNumber || null, contactNumber || null, term, remarksFreebiesConcern, deliveryDate, quantity, price, Date.now(), auth_id]
     })
 
     const connection = createConnection()
