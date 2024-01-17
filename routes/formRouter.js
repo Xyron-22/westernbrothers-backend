@@ -1,7 +1,7 @@
 const express = require("express");
 const {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData, deleteAllRecordsInOrderTable, getAllOrderRecordsBasedOnAuthId} = require("../controllers/orderTableController")
 const {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable, deleteRecordInAccountTable} = require("../controllers/accountTableController");
-const {getAllProductRecords, insertRecordInProductTable, deleteRecordInProductTable} = require("../controllers/productTableController");
+const {getAllProductRecords, insertRecordInProductTable, deleteRecordInProductTable, updateStocksRecordInProductTable} = require("../controllers/productTableController");
 const {checkIfLoggedIn, checkIfAuthorized, checkIfChangedPassRecently} = require("../controllers/middlewares");
 
 const router = express.Router()
@@ -33,7 +33,8 @@ router.route("/account/:dsp")
 //route for product table
 router.route("/product")
     .get(getAllProductRecords)
-    .post(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, insertRecordInProductTable) 
+    .post(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, insertRecordInProductTable)
+    .patch(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, updateStocksRecordInProductTable)
 
 router.route("/product/:id")
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteRecordInProductTable)
