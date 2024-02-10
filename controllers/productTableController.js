@@ -60,7 +60,7 @@ const deleteRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
 //route handler for updating number of stocks in product table
 const updateStocksRecordInProductTable = asyncErrorHandler(async (req, res, next) => {
     const {product_id, stocks} = req.body
-    if (!product_id && !stocks) return next(new CustomError("All fields are required", 400))
+    if (!product_id || !stocks) return next(new CustomError("All fields are required", 400))
     const q = "UPDATE `product` SET stocks = ? WHERE product_id = ?"
     const connection = createConnection()
     connection.execute(q, [stocks, product_id], (err, query_result, fields) => {
