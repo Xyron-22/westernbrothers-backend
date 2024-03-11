@@ -1,5 +1,5 @@
 const express = require("express");
-const {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData, deleteAllRecordsInOrderTable, getAllOrderRecordsBasedOnAuthId, updateStatusOfAnOrderRecord} = require("../controllers/orderTableController")
+const {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData, deleteAllRecordsInOrderTable, getAllOrderRecordsBasedOnAuthId, updateStatusOfAnOrderRecord, getAllOrderRecordsBasedOnAccountId} = require("../controllers/orderTableController")
 const {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable, deleteRecordInAccountTable} = require("../controllers/accountTableController");
 const {getAllProductRecords, insertRecordInProductTable, deleteRecordInProductTable, updateStocksRecordInProductTable} = require("../controllers/productTableController");
 const {checkIfLoggedIn, checkIfAuthorized, checkIfChangedPassRecently} = require("../controllers/middlewares");
@@ -19,6 +19,9 @@ router.route("/order/data")
 router.route("/order/:id")
     .get(getAllOrderRecordsBasedOnAuthId)
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, deleteRecordInOrderTable)
+
+router.route("/order/account/:accountId")
+    .get(getAllOrderRecordsBasedOnAccountId)
 
 //route for account table
 router.route("/account")

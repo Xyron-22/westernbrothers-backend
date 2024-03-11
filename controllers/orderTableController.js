@@ -26,7 +26,7 @@ const insertRecordInOrderTable = asyncErrorHandler(async (req, res, next) => {
 
 //route handler for getting all of the records in order table, join with the product and account table //refactored to using promised pool
 const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
-    const q = "SELECT order_id, order_date, customer_number, account_name, location, dsp, mat_description, quantity, price, customer_name, tin, contact, terms, remarks_freebies_concern, delivery_date, quantity * price AS total_price, time_stamp, status FROM `order` INNER JOIN `account` ON order.account_id = account.account_id INNER JOIN `product` ON order.product_id = product.product_id ORDER BY order_id ASC"
+    const q = "SELECT order_id, order_date, customer_number, account_name, order.account_id, location, dsp, mat_description, quantity, price, customer_name, tin, contact, terms, remarks_freebies_concern, delivery_date, quantity * price AS total_price, time_stamp, status FROM `order` INNER JOIN `account` ON order.account_id = account.account_id INNER JOIN `product` ON order.product_id = product.product_id ORDER BY order_id ASC"
     const connection = createConnection()
     connection.execute(q, (err, query_result, fields) => {
         if (err) {
@@ -39,6 +39,24 @@ const getAllOrderRecords = asyncErrorHandler(async (req, res, next) => {
             data: query_result,
         })
     })       
+})
+
+//route handler for getting all of the records in order table filtered by the account_id
+const getAllOrderRecordsBasedOnAccountId = asyncErrorHandler(async (req, res, next) => {
+    const {accountId} = req.params
+    const q = "SELECT * FROM `order` INNER JOIN `account` ON order.account_id = account.account_id INNER JOIN `product` ON order.product_id = product.product_id WHERE order.account_id = ?"
+    const connection = createConnection()
+    connection.execute(q, [accountId], (err, query_result, fields) => {
+        if (err) {
+            connection.end()
+            return next(err)
+        }
+        connection.end()
+        res.status(200).json({
+            status: "success",
+            data: query_result
+        })
+    })
 })
 
 //route handler for getting all of the records in order table filtered by the auth_id account that inserted them
@@ -259,4 +277,12 @@ const updateStatusOfAnOrderRecord = asyncErrorHandler(async (req, res, next) => 
     })
 })
 
-module.exports = {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData, deleteAllRecordsInOrderTable, getAllOrderRecordsBasedOnAuthId, updateStatusOfAnOrderRecord}
+module.exports = {insertRecordInOrderTable, 
+    getAllOrderRecords, 
+    deleteRecordInOrderTable, 
+    getAllOrderData, 
+    deleteAllRecordsInOrderTable, 
+    getAllOrderRecordsBasedOnAuthId, 
+    updateStatusOfAnOrderRecord,
+    getAllOrderRecordsBasedOnAccountId
+}
