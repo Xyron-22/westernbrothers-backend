@@ -4,7 +4,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 //route handlers for getting all the account records //refactored to using promised pool
 const getAllAccountRecords = asyncErrorHandler(async (req, res, next) => {
-    const q = "SELECT * FROM `account` ORDER BY account_id ASC"
+    const q = "SELECT * FROM `account` ORDER BY account_id DESC"
     const connection = createConnection()
     connection.execute(q, (err, query_result, fields) => {
         if (err) {
@@ -78,4 +78,22 @@ const deleteRecordInAccountTable = asyncErrorHandler(async (req, res, next) => {
     })
 })
 
-module.exports = {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable, deleteRecordInAccountTable}
+//route handler for deleting selected accounts
+const deleteSelectedRecordsInAccountTable = asyncErrorHandler(async (req, res, next) => {
+    const {data} = req.body
+    const q = "DELETE FROM `account` WHERE account_id IN (?)"
+    const connection = createConnection()
+    connection.query(q, [data], (err, query_result, fields) => {
+        if (err) {
+            connection.end()
+            return next(err)
+        }
+        connection.end()
+        res.status(200).json({
+            status: "success",
+            data: query_result
+        })
+    })
+})
+
+module.exports = {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable, deleteRecordInAccountTable, deleteSelectedRecordsInAccountTable}

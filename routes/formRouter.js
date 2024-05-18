@@ -1,8 +1,43 @@
 const express = require("express");
-const {insertRecordInOrderTable, getAllOrderRecords, deleteRecordInOrderTable, getAllOrderData, deleteAllRecordsInOrderTable, getAllOrderRecordsBasedOnAuthId, updateStatusOfAnOrderRecord, getAllOrderRecordsBasedOnAccountId} = require("../controllers/orderTableController")
-const {getAllAccountRecords, getAccountBasedOnDsp, insertRecordInAccountTable, deleteRecordInAccountTable} = require("../controllers/accountTableController");
-const {getAllProductRecords, insertRecordInProductTable, deleteRecordInProductTable, updateStocksRecordInProductTable} = require("../controllers/productTableController");
-const {checkIfLoggedIn, checkIfAuthorized, checkIfChangedPassRecently} = require("../controllers/middlewares");
+//order table
+const {
+    insertRecordInOrderTable, 
+    getAllOrderRecords, 
+    deleteRecordInOrderTable, 
+    getAllOrderData, 
+    deleteAllRecordsInOrderTable, 
+    getAllOrderRecordsBasedOnAuthId, 
+    updateStatusOfAnOrderRecord, 
+    getAllOrderRecordsBasedOnAccountId,
+    getAllPendingOrders,
+    getAllInvoicedOrders,
+    getAllPaidOrders,
+    deleteSelectedRecordsInOrderTable,
+    updateAnOrderRecord,
+} = require("../controllers/orderTableController")
+//account table
+const {
+    getAllAccountRecords, 
+    getAccountBasedOnDsp, 
+    insertRecordInAccountTable, 
+    deleteRecordInAccountTable,
+    deleteSelectedRecordsInAccountTable
+} = require("../controllers/accountTableController");
+//product table
+const {
+    getAllProductRecords, 
+    insertRecordInProductTable, 
+    deleteRecordInProductTable, 
+    updateStocksRecordInProductTable,
+    deleteSelectedProductsInProductTable,
+    updateAProductRecord
+} = require("../controllers/productTableController");
+//auth table
+const {
+    checkIfLoggedIn, 
+    checkIfAuthorized, 
+    checkIfChangedPassRecently
+} = require("../controllers/middlewares");
 
 const router = express.Router()
 
@@ -13,12 +48,26 @@ router.route("/order")
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteAllRecordsInOrderTable)
     .patch(checkIfLoggedIn, checkIfChangedPassRecently, updateStatusOfAnOrderRecord)
 
+    //for getting analytics
 router.route("/order/data")
     .get(getAllOrderData)
+    //for getting pending orders
+router.route("/order/pending")
+    .get(getAllPendingOrders)
+    //for getting invoiced orders
+router.route("/order/invoiced")
+    .get(getAllInvoicedOrders)
+    //for getting paid orders
+router.route("/order/paid")
+    .get(getAllPaidOrders)
+    //for deleting selected order ids
+router.route("/order/selected")
+    .delete(checkIfLoggedIn, checkIfChangedPassRecently, deleteSelectedRecordsInOrderTable)
 
 router.route("/order/:id")
     .get(getAllOrderRecordsBasedOnAuthId)
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, deleteRecordInOrderTable)
+    .patch(checkIfLoggedIn, checkIfChangedPassRecently, updateAnOrderRecord)
 
 router.route("/order/account/:accountId")
     .get(getAllOrderRecordsBasedOnAccountId)
@@ -27,6 +76,9 @@ router.route("/order/account/:accountId")
 router.route("/account")
     .get(getAllAccountRecords)
     .post(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, insertRecordInAccountTable)
+
+router.route("/account/selected")
+    .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteSelectedRecordsInAccountTable)
 
 router.route("/account/:id")
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteRecordInAccountTable)
@@ -40,7 +92,12 @@ router.route("/product")
     .post(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, insertRecordInProductTable)
     .patch(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, updateStocksRecordInProductTable)
 
+router.route("/product/selected")
+    .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteSelectedProductsInProductTable)
+
 router.route("/product/:id")
     .delete(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, deleteRecordInProductTable)
+    .patch(checkIfLoggedIn, checkIfChangedPassRecently, checkIfAuthorized, updateAProductRecord)
+
 
 module.exports = router
